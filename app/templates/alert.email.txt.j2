@@ -1,0 +1,17 @@
+Hi,
+
+{{alert.cryptocurrency}} has gone {{alert.price_direction}} ${{alert.price}} {{alert.currency}} on {{alert.exchange}}
+{% if alert.note %}{{alert.note}}{% endif %}
+{% if alert.user.email != alert.method_data %}
+    This notification was configured by {{alert.user.email}},
+    if it's an unsolicited alarm, please report it here:
+
+    {{APP_URL}}/alert/report/{{alert.hash}}
+{% else %}
+Edit or Delete your Alert here: {{APP_URL}}/alert/edit/{{alert.hash}}
+{% endif %}
+Have a great day,
+
+{{APP_TITLE}} Team
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

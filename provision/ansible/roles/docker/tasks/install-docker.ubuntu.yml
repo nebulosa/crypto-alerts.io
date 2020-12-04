@@ -1,0 +1,23 @@
+- name: add docker apt signing key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: install software-properties-common apt-transport-https
+  apt: name={{item}} state=present install_recommends=no update_cache=yes cache_valid_time=86400
+  with_items:
+    - software-properties-common
+    - apt-transport-https
+
+- name: add docker repository
+  raw: |
+    add-apt-repository -y -u "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+- name: install docker-{{docker_edition}} {{docker_version}}
+  apt: name={{item}} state=present install_recommends=no update_cache=yes cache_valid_time=86400
+  with_items:
+    - docker-ce
+
+- name: add docker administrators to the docker group
+  user: name="{{item}}" groups="docker" append=true
+  with_items: "{{docker_admin_users}}"

@@ -1,0 +1,42 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<h1 class="title">Terms of Service</h1>
+<hr>
+<div class="content has-text-left">
+  <h2 class="subtitle">Limits:</h2>
+  <ul>
+      <li>{{APP_MAX_ALERTS_PER_MONTH}} active alerts / unlimited inactive alerts</li>
+      <li>{{APP_MAX_EMAIL_NOTIFICATIONS_PER_MONTH}} email notifications per month</li>
+      <li>{{APP_MAX_ALERTS_SPAM_STRIKES}} spam notifications per account</li>
+  </ul>
+
+  <h2 class="subtitle">Spam Notifications</h2>
+  <p>
+    Spam Notifications are triggered every time an email owner reports a non
+    solicited alert, once the MAX amount is reached the account will be
+    disabled. Please do not suscribe other people emails without their concent.
+  </p>
+
+  <h2 class="subtitle">Third-party Services:</h2>
+  <p>
+    From time to time, we may provide you with links to third party
+    websites or services that we do not own or control. Your use of the
+    Service may also include the use of applications that are developed
+    or owned by a third party. Your use of such third party applications,
+    websites, and services is governed by that party's own terms of
+    service or privacy policies. We encourage you to read the terms and
+    conditions and privacy policy of any third party application, website
+    or service that you visit or use.
+  </p>
+
+  <h2 class="subtitle">Accepting these Terms</h2>
+  <p>
+    If you access or use the Service, it means you agree to be bound by
+    all of the terms below. So, before you use the Service, please read
+    all of the terms. If you don't agree to all of the terms below, please
+    do not use the Service.
+  </p>
+</div>
+{% endblock %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

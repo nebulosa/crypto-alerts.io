@@ -1,0 +1,13 @@
+{{docker_containers_log_path}}/*/*.log {
+    daily
+    maxsize 20M
+    rotate 5
+    maxage 3
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}

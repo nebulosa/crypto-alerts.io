@@ -1,0 +1,8 @@
+- name: install docker API client, {{docker_py_version}}
+  pip: name=docker version={{docker_py_version}} state=present
+  register: docker_api_installed
+  ignore_errors: true
+
+- name: workaround https://stackoverflow.com/questions/7446187/no-module-named-pkg-resources/
+  include_tasks: broken-pip-in-ubuntu-16.04.yml
+  when: docker_api_installed|failed

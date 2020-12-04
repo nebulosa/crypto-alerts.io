@@ -1,0 +1,95 @@
+- name: lookup distro fact
+  shell: |
+    _distro() { #return distro name in lower string
+        _distro__DIST_INFO="/etc/lsb-release"
+        if [ -r "${_distro__DIST_INFO}" ]; then
+            . "${_distro__DIST_INFO}"
+        fi
+
+        if [ -z "${DISTRIB_ID}" ]; then
+            _distro__DISTRIB_ID="Unknown";
+            if [ -f /etc/arch-release ]; then
+                _distro__DISTRIB_ID="Arch"
+            elif [ -r /etc/knoppix-version ]; then
+                _distro__DISTRIB_ID="Knoppix"
+            elif [ -r /etc/sidux-version ]; then
+                _distro__DISTRIB_ID="Sidux"
+            elif [ -r /etc/debian_version ]; then
+                _distro__DISTRIB_ID="Debian"
+            elif [ -r /etc/issue ]; then
+                _distro__DISTRIB_ID="$(awk '{print $1}' /etc/issue.net)"
+                if [ X"${_distro__DISTRIB_ID}" = X"Ubuntu" ]; then
+                    _distro__DISTRIB_ID="Ubuntu"
+                fi
+            elif [ -r /etc/gentoo-release ]; then
+                _distro__DISTRIB_ID="Gentoo"
+            elif [ -f /etc/lfs-version ]; then
+                _distro__DISTRIB_ID="LFS"
+            elif [ -r /etc/pclinuxos-release ]; then
+                _distro__DISTRIB_ID="PCLinuxOS"
+            elif [ -f /etc/mandriva-release ] || [ -f /etc/mandrake-release ]; then
+                _distro__DISTRIB_ID="Mandriva"
+            elif [ -f /etc/redhat-release ]; then
+                _distro__DISTRIB_ID="RedHat"
+            elif [ -f /etc/fedora-release ]; then
+                _distro__DISTRIB_ID="Fedora"
+            elif [ -r /etc/vector-version ]; then
+                _distro__DISTRIB_ID="VectorLinux"
+            elif [ -r /etc/slackware-version ]; then
+                _distro__DISTRIB_ID="$(cat /etc/slackware-version)"
+            elif [ -f /etc/release ]; then
+                _distro__DISTRIB_ID="Solaris"
+            elif [ -r /etc/SuSE-release ]; then
+                _distro__DISTRIB_ID="$(grep -i suse /etc/SuSE-release)"
+            elif [ -f /etc/yellowdog-release ]; then
+                _distro__DISTRIB_ID="YellowDog Linux"
+            elif [ -f /etc/zenwalk-version ]; then
+                _distro__DISTRIB_ID="Zenwalk"
+            fi
+            printf "%s\\n" "${_distro__DISTRIB_ID}" | \
+                tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'
+        else
+            printf "%s\\n" "${DISTRIB_ID}" | \
+                tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'
+        fi
+    }
+    _distro
+  changed_when: false # this will never report 'changed' status
+  register: lookup_distro
+
+- name: set distro fact
+  set_fact: distro={{lookup_distro.stdout}}
+  check_mode: no
+
+- debug: var=distro
+
+- name: lookup environment iface fact
+  shell: |
+    set -x
+    ifaces="$(ip address show | grep -E "^[0-9]?:" | awk '{gsub(":", ""); print $2}' | grep -v lo)"
+    if [ -f /home/vagrant/.ssh/authorized_keys ]; then
+      iface="$(printf "%s\\n" "${ifaces}" | awk 'NR == 2')"
+    else
+      iface="$(printf "%s\\n" "${ifaces}" | awk 'NR == 1')"
+    fi
+    printf "%s\\n" "${iface}"
+  ignore_errors: true
+  changed_when: false # this will never report 'changed' status
+  register: lookup_iface
+
+- name: set iface fact
+  set_fact: cluster_iface={{lookup_iface.stdout}}
+  check_mode: no
+
+- debug: var=cluster_iface
+
+- name: display all variables/facts known for a host
+  debug:
+    var: hostvars[inventory_hostname]
+    verbosity: 4
+
+- name: set inter-communication cluster ipv4 address
+  set_fact: cluster_ipv4_address={{hostvars[inventory_hostname]['ansible_' + cluster_iface].ipv4.address}}
+  check_mode: no
+
+- debug: var=cluster_ipv4_address

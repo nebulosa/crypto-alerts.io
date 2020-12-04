@@ -1,0 +1,44 @@
+- name: create multisite directory
+  file: path="{{docker_containers_volume_path}}/multisite/" state=directory
+
+- name: download multisite docker-compose.yml (http)
+  get_url:
+    url: https://raw.githubusercontent.com/javier-lopez/dockers/master/multisite/docker-compose.yml
+    dest: "{{docker_containers_volume_path}}/multisite/docker-compose.yml"
+
+- name: download multisite docker-compose.ssl.yml (https)
+  get_url:
+    url: https://raw.githubusercontent.com/javier-lopez/dockers/master/multisite/docker-compose.ssl.yml
+    dest: "{{docker_containers_volume_path}}/multisite/docker-compose.ssl.yml"
+
+- name: run docker-multisite
+  #/tmp usually doesn't have enough space for docker-compose build step
+  shell: |
+    export TMPDIR=$HOME; echo "$TMPDIR"
+    cd {{docker_containers_volume_path}}/multisite && \
+    docker-compose -f docker-compose.yml up -d
+  register: docker_multisite
+  when: env == "vagrant"
+
+- name: touch acme.json
+  shell: |
+    cd {{docker_containers_volume_path}}/multisite && \
+    touch acme.json && chmod 600 acme.json
+  when: env == "prod"
+
+- name: set acme_email variable
+  shell: |
+    cd {{docker_containers_volume_path}}/multisite
+    sed -i 's:=your-personal@email.tld:={{acme_email}}:g' docker-compose.ssl.yml
+  when: env == "prod"
+
+- name: run docker-multisite ssl
+  #/tmp usually doesn't have enough space for docker-compose build step
+  shell: |
+    export TMPDIR=$HOME; echo "$TMPDIR"
+    cd {{docker_containers_volume_path}}/multisite && \
+    docker-compose -f docker-compose.ssl.yml up -d
+  register: docker_multisite
+  when: env == "prod"
+
+- debug: var=docker_multisite

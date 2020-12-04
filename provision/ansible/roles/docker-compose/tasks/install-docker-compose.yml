@@ -1,0 +1,12 @@
+- name: download docker compose, {{docker_compose_version}}
+  get_url:
+    url: https://github.com/docker/compose/releases/download/{{docker_compose_version}}/docker-compose-Linux-x86_64
+    dest: /usr/bin/docker-compose-{{docker_compose_version}}
+    mode: 0755
+
+- name: ln docker-compose binary to docker-compose-{{docker_compose_version}}
+  file:
+    src:   /usr/bin/docker-compose-{{docker_compose_version}}
+    dest:  /usr/bin/docker-compose
+    state: link
+    mode:  0755

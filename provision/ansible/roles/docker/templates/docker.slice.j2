@@ -1,0 +1,8 @@
+[Unit]
+Description=Limited resources slice for containers
+DefaultDependencies=no
+Before=slices.target
+
+[Slice]
+CPUQuota={{docker_daemon_CPU_maxpct * ansible_processor_count | int}}%
+MemoryLimit={{(ansible_memtotal_mb * docker_daemon_memory_maxpct /100) | int}}M

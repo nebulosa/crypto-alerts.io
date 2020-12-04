@@ -1,0 +1,2 @@
+- name: setup OS pkg cache
+  include_tasks: setup-cache-pkgs.{{distro}}.yml

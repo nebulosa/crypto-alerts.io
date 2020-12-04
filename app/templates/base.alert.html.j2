@@ -1,0 +1,211 @@
+{% extends "base.html.j2" %}
+{% block content %}
+      {% block h1_title %}{% endblock %}
+      <hr>
+
+      {% block form_action_url %}{% endblock %}
+        {{forms.alert.hidden_tag()}}
+
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+
+        <div class="field is-horizontal">
+
+          <div class="field-label is-normal" style="flex-grow:0.5">
+            <label class="label">Send an</label>
+          </div>
+
+          <div class="field-body">
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  {{forms.alert.method()}}
+                </div>
+              </div>
+            </div>
+
+            <div class="field-label is-normal">
+              <label class="label">to</label>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                {{forms.alert.method_data(class_="input")}}
+              </div>
+            </div>
+
+            <div class="field-label is-normal" style="flex-grow:0.5">
+              <label class="label">every</label>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  {{forms.alert.resend_after()}}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+
+        <div class="field is-horizontal">
+
+          <div class="field-label is-normal" style="flex-grow:0.5">
+            <label class="label">When</label>
+          </div>
+
+          <div class="field-body">
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  {{forms.alert.cryptocurrency()}}
+                </div>
+              </div>
+            </div>
+
+            <div class="field-label is-normal">
+              <label class="label">goes</label>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  {{forms.alert.price_direction()}}
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                {{forms.alert.price(class_="input")}}
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  {{forms.alert.currency()}}
+                </div>
+              </div>
+            </div>
+
+            <div class="field-label is-normal">
+              <label class="label">on</label>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                <div class="select">
+                  {{forms.alert.exchange()}}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+
+        <div class="field is-horizontal">
+          <div class="field-label is-normal" style="flex-grow:0.5">
+            <label class="label">Add a note</label>
+          </div>
+
+          <div class="field-body">
+            <div class="field">
+              {{forms.alert.note(class_="input")}}
+            </div>
+
+            <div class="field-label is-normal">
+              <label class="label">Disable after it triggers once</label>
+            </div>
+
+            <div class="field">
+              <div class="control">
+                {{forms.alert.notify_only_once()}}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+        <!------------------------------------------------------------>
+
+        {% block form_submit %}{% endblock %}
+      </form>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+// self executing function here
+(function() {
+    // your page initialization code here
+    // the DOM will be available here
+    {% if   modal == "account-edit-password" %}
+        gotoAccountEditPasswordModal()
+    {% elif modal == "recover-account" %}
+        gotoRecoverModal()
+    {% endif %}
+})();
+</script>
+
+<script>
+  const currencies       = {{ supported_currencies_dict_jinja2()|tojson }}
+  const cryptocurrencies = {{ supported_cryptocurrencies_dict_jinja2()|tojson }}
+
+  var exchange           = $('select#exchange').first()
+  var currency           = $('select#currency').first()
+  var cryptocurrency     = $('select#cryptocurrency').first()
+
+  currency.empty()
+  cryptocurrency.empty()
+
+  var exchange_currencies = currencies[exchange.val()]
+  var exchange_cryptocurrencies = cryptocurrencies[exchange.val()]
+
+  for (var key in exchange_currencies) {
+    currency.append($('<option/>', {'value': exchange_currencies[key], 'text': exchange_currencies[key]}))
+  }
+
+  for (var key in exchange_cryptocurrencies) {
+    cryptocurrency.append($('<option/>', {'value': exchange_cryptocurrencies[key], 'text': exchange_cryptocurrencies[key]}))
+  }
+  cryptocurrency.val('BTC') //default, the only, the one
+
+  exchange.change(function(ev) {
+    currency.empty();
+    cryptocurrency.empty();
+
+    var exchange_currencies = currencies[exchange.val()];
+    var exchange_cryptocurrencies = cryptocurrencies[exchange.val()];
+
+    for (var key in exchange_currencies) {
+      currency.append($('<option/>', {'value': exchange_currencies[key], 'text': exchange_currencies[key]}))
+    }
+
+    for (var key in exchange_cryptocurrencies) {
+      cryptocurrency.append($('<option/>', {'value': exchange_cryptocurrencies[key], 'text': exchange_cryptocurrencies[key]}))
+    }
+
+    cryptocurrency.val('BTC')
+  })
+</script>
+
+<script>
+  $('#cryptocurrency').select2();
+</script>
+{% endblock %}
+
+{# vim: set ts=4 sw=2 tw=0 ft=jinja2.html #}

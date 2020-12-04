@@ -1,0 +1,88 @@
+- name: add "wheel" group
+  group: name="wheel" state=present
+
+- name: allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: per-user group creation
+  group: name="{{item.username}}"
+  with_items: "{{system_users}}"
+
+- name: create system users
+  user: name="{{item.username}}"
+        group="{{item.username}}"
+        groups="{{item.groups | join(',')}}"
+        shell={{item.shell if item.shell is defined else '/bin/bash'}}
+        password="{{item.password if item.password is defined else '!'}}"
+        createhome="yes"
+  with_items: "{{system_users}}"
+
+- name: set up authorized_keys for system users
+  authorized_key: user={{item.username}} key="{{lookup('file', '~/.ssh/id_rsa.pub')}}"
+  with_items: "{{system_users}}"
+
+- name: install ansible dependencies
+  include_tasks: install-ansible-dependencies.{{distro}}.yml
+
+- name: ensure ansible dependencies are executable
+  raw: test -f {{item}} && chmod -R 755 {{item}}
+  args:
+    warn: false
+  with_items:
+    - '/usr/bin/python2.7'
+
+- name: install base packages
+  include_tasks: install-base-packages.{{distro}}.yml
+
+- name: ensure global log directory exists
+  file: dest={{logs_path}} state=directory
+
+- name: configure rsyslog to listen on 514/UDP for 127.0.0.1
+  lineinfile: dest=/etc/rsyslog.conf line="{{item}}" state=present insertafter=".*MODULES.*"
+  with_items:
+    - "$IncludeConfig /etc/rsyslog.d/*.conf"
+    - "$UDPServerRun 514"
+    - "$UDPServerAddress 127.0.0.1"
+    - "$ModLoad imudp"
+  notify:
+    - restart rsyslog
+
+- name: cleanup rsyslog old file format
+  lineinfile: dest=/etc/rsyslog.conf
+              regexp="^\$ActionFileDefaultTemplate"
+              state=absent
+  notify:
+    - restart rsyslog
+
+- name: configure rsyslog file format
+  lineinfile: dest=/etc/rsyslog.conf
+              line="$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat"
+              insertbefore="^\$IncludeConfig"
+              state=present
+  notify:
+    - restart rsyslog
+
+- name: schedule logrotate hourly
+  copy: src=logrotate.cron dest=/etc/cron.hourly/logrotate mode=0700
+
+- name: uninstall firewalld
+  include_tasks: uninstall-firewalld.{{distro}}.yml
+
+- name: disable selinux
+  include_tasks: disable-selinux.{{distro}}.yml
+
+- name: enable iptables
+  include_tasks: enable-iptables.{{distro}}.yml
+
+#  destroy docker iptables rules
+#- name: flush iptables
+  #raw: |
+    #iptables --flush
+    #service iptables save && service restart iptables || : #could not exists the service in none redhat based distros
+  #args:
+    #warn: false

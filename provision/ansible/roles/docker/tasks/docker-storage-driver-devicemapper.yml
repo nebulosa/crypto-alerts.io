@@ -1,0 +1,48 @@
+#https://docs.docker.com/engine/userguide/storagedriver/device-mapper-driver/#configure-direct-lvm-mode-for-production
+- name: install devicemapper dependencies
+  include_tasks: install-devicemapper-dependencies.{{distro}}.yml
+
+- name: check {{docker_volume_group}} exists
+  command: vgck {{docker_volume_group}}
+  register: vg_docker
+  ignore_errors: yes
+
+- name: setup {{docker_volume_group}}
+  include_tasks: docker-storage-driver-devicemapper-disks.yml
+  when: vg_docker|failed
+
+- name: stop docker daemon
+  service: name=docker state=stopped
+  ignore_errors: yes
+
+- name: delete docker logical volumes
+  lvol: vg={{docker_volume_group}} lv={{item}} state=absent force=yes
+  with_items:
+    - thinpool
+    - thinpoolmeta
+  register: docker_lv_delete
+
+- name: create docker logical volumes
+  lvol: vg={{docker_volume_group}} lv={{item.volume}} size={{item.size}} opts='--wipesignatures y' state=present
+  with_items:
+    - { volume: 'thinpool',     size: '95%VG' }
+    - { volume: 'thinpoolmeta', size: '1%VG'  }
+
+- name: convert docker logical volumes to thinpools
+  command: lvconvert -y --zero n -c 512K --thinpool {{docker_volume_group}}/thinpool --poolmetadata {{docker_volume_group}}/thinpoolmeta
+
+- name: create docker thinpool LVM profile
+  copy: src=docker-thinpool.profile dest=/etc/lvm/profile/docker-thinpool.profile
+  register: docker_lvm_profile
+
+- name: apply thinpool LVM profile
+  command: lvchange --metadataprofile docker-thinpool {{docker_volume_group}}/thinpool
+  when: docker_lvm_profile.changed
+
+- name: enable LVM monitoring for automatic extension
+  command: lvs -o+seg_monitor
+  when: docker_lvm_profile.changed
+
+- name: remove /var/lib/docker/*
+  file: path=/var/lib/docker state=absent
+  when: docker_lv_delete.changed

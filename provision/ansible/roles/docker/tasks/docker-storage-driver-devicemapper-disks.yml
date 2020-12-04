@@ -1,0 +1,9 @@
+- name: check {{docker_volume_disks|join(' ')}} disks exists
+  stat: path={{item}}
+  with_items: "{{docker_volume_disks}}"
+
+- name: initialize LVM disks
+  command: pvcreate {{docker_volume_disks|join(' ')}}
+
+- name: create {{docker_volume_group}} volume group
+  command: vgcreate {{docker_volume_group}} {{docker_volume_disks|join(' ')}}

@@ -1,0 +1,6 @@
+- name: install base packages
+  yum: name={{item}} state=latest
+  with_items:
+    - bash-completion
+    - iptables
+    - iptables-services

@@ -1,0 +1,7 @@
+#!/bin/sh
+logrotate /etc/logrotate.conf
+EXITVALUE="${?}"
+
+if [ X"${EXITVALUE}" != X"0" ]; then
+    logger -t logrotate "ALERT exited abnormally with [${EXITVALUE}]"
+fi

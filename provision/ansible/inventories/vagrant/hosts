@@ -1,0 +1,9 @@
+[inventory:children]
+docker
+app
+
+[docker:children]
+app
+
+[app]
+10.10.10.11 ansible_user=vagrant

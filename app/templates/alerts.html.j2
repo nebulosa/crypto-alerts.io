@@ -1,0 +1,84 @@
+{% extends "base.html.j2" %}
+{% include "modal.alert.html.j2" %}
+
+{% block content %}
+<div class="columns">
+  <div class="column">
+    <h1 class="title has-text-left">
+      {% if current_user.email == user.email %}
+        My Alerts
+      {% else %}
+        {{user.email}} Alerts
+      {% endif %}
+    </h1>
+  </div>
+
+  <div class="column is-2">
+    <div class="select">
+      <select>
+        <option selected>Most Recent</option>
+        <option>State</option>
+        <option>Coin</option>
+        <option>Exchange</option>
+        <option>Alert Method</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="column is-3">
+    <div class="select">
+      <select>
+        <option selected>Bulk Operations</option>
+        <option>Disable ALL alerts</option>
+        <option>Delete ALL disabled alerts</option>
+        <option>Delete ALL alerts</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+{% if user.alerts() | length > 0 %}
+{% for alert in user.alerts() %}
+
+<div class="columns">
+  <div class="column is-3">
+    {{alert.date.strftime('%b %d, %Y ')}} <strong>{{alert.date.strftime('%I:%M %p')}}</strong> CST
+  </div>
+
+  <div class="column">
+    <p class="subtitle has-text-left">
+        Send an <u>{{alert.method}}</u> as soon as
+        <u>{{alert.cryptocurrency}}</u> goes <u>{{alert.price_direction}}</u>
+        $<u>{{alert.price}} {{alert.currency}}</u> on <u>{{alert.exchange}}</u>
+    </p>
+  </div>
+
+  <div class="column is-2">
+    {% if alert.active %}
+    <a class="has-text-success" title="Disable Alert" href="{{url_for('alert_toggle_state', hash=alert.hash)}}"><i class="fas fa-toggle-on is-size-5 mr-3"></i></a>
+    {% else  %}
+    <a class="has-text-grey" title="Enable Alert" href="{{url_for('alert_toggle_state', hash=alert.hash)}}"><i class="fas fa-toggle-off is-size-5 mr-3"></i></a>
+    {% endif %}
+    <a class="has-text-info" title="Edit Alert" href="{{url_for('alert_edit', hash=alert.hash)}}"><i class="fas fa-edit is-size-5 mr-3"></i></a>
+    <a href="javascript:gotoAlertDeleteModal('{{alert.hash}}')" title="Delete Alert" class="has-text-danger">
+      <i class="far fa-trash-alt is-size-5 mr-3"></i>
+    </a>
+  </div>
+</div>
+
+{% endfor %}
+{% else %}
+
+<div class="columns">
+  <div class="column is-size-3 pt-6">
+      When the void arises, something must fill it
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

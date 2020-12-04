@@ -1,0 +1,4 @@
+backups
+mongodb-data
+__pycache__
+*.pyc

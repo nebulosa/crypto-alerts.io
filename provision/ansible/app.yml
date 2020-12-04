@@ -1,0 +1,17 @@
+- import_playbook: plays/bootstrap.yml
+  when: not skip_bootstrap
+
+- import_playbook: plays/common.yml
+  when: not skip_common
+
+- import_playbook: plays/docker.yml
+  when: not skip_docker
+
+- import_playbook: plays/docker-multisite.yml
+  when: not skip_docker_multisite
+
+- import_playbook: plays/dockerized/app.yml
+  when: not skip_dockerized_app
+
+- import_playbook: plays/post-deployment.yml
+  when: not skip_post_deployment

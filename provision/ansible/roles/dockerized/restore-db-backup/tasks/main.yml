@@ -1,0 +1,18 @@
+- name: create a directory to restore backups
+  file: path={{item}} state=directory
+  with_items:
+    - /restore
+
+- name: upload backup directory
+  synchronize: src={{item}} dest="/restore"  \
+               delete=yes recursive=yes copy_links=yes
+  with_items:
+    - backups
+
+- name: restore selected backup
+  raw: "{{docker_containers_volume_path}}/app/extra/db-restore.sh {{app_db_restore_backup}}"
+  args:
+    warn: false
+  register: raw_output
+
+- debug: var=raw_output.stdout_lines

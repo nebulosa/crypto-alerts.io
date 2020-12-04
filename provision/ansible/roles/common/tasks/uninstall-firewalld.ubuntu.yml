@@ -1,0 +1,4 @@
+- name: uninstall firewalld
+  apt: name={{item}} state=absent
+  with_items:
+    - firewalld

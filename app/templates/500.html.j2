@@ -1,0 +1,15 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<h1 class="title is-size-1">Error: 500</h1>
+<hr>
+<h1 class="title mb-6 has-text-grey-dark">Internal Server Error</h1>
+<br>
+<a class="mt-5" title="Go Back" href="{{request.referrer}}">
+  <h2 class="subtitle is-size-4 has-text-link">
+  <i class="fas fa-arrow-circle-left mr-2"></i>
+  Go Back
+  </h2>
+</a>
+{% endblock %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

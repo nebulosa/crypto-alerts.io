@@ -1,0 +1,396 @@
+{% if current_user.is_authenticated %}
+<!----------------------------------->
+<!-- start modals account/settings -->
+<!----------------------------------->
+<div class="modal modal-fx-fadeInScale" id="modal-account">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">My Account
+        {% if current_user.is_admin %}
+        (admin)
+        {% elif current_user.is_mod %}
+        (mod)
+        {% endif %}
+    </h2>
+    <hr>
+
+    <form class="form-horizontal" >
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-normal has-text-centered">
+          <label class="label mb-4">
+            Using <u>3</u> out of <u>100</u> alerts and <u>12</u> out of <u>1000</u> notifications
+          </label>
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+
+        <div class="field-label is-normal">
+          <label class="label">Email</label>
+        </div>
+
+        <div class="field-body">
+
+          <div class="field-label is-normal">
+            <label class="label">{{current_user.email}}
+            {% if current_user.confirmed %}
+              <span>(confirmed)</span>
+            {% else  %}
+              <span class="has-text-danger">(unconfirmed)</span>
+            {% endif %}
+            </label>
+          </div>
+
+          <div class="field">
+            <div class="control">
+              <a href="javascript:gotoAccountEditEmailModal()" class="button is-block is-success is-outlined is-fullwidth">Edit</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+
+        <div class="field-label is-normal">
+          <label class="label">Password</label>
+        </div>
+
+        <div class="field-body">
+
+          <div class="field">
+            <div class="control">
+              <a href="javascript:gotoAccountEditPasswordModal()" class="button is-block is-success is-outlined is-fullwidth">Edit</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+
+        <div class="field-label is-normal">
+          <label class="label">Account</label>
+        </div>
+
+        <div class="field-body">
+
+          <div class="field">
+            <div class="control">
+              <a href="javascript:gotoAccountDeleteModal()" class="button is-block is-danger is-outlined is-fullwidth">Delete</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <a href="{{url_for('logout')}}" class="button is-block is-primary is-large is-fullwidth">Logout</a>
+    </form>
+
+  </div>
+</div>
+
+<div class="modal modal-fx-fadeInScale" id="modal-account-edit-email">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Change Email</h2>
+    <hr>
+
+    <form action="{{url_for('email_edit')}}" method="post">
+      {{forms.email.hidden_tag()}}
+      <div class="field">
+        <div class="control">
+          {{forms.email.email(class_="input is-large")}}
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          {{forms.email.confirm(class_="input is-large")}}
+        </div>
+      </div>
+
+      {{forms.email.submit(class_="button is-block is-primary is-large is-fullwidth")}}
+    </form>
+
+  </div>
+</div>
+
+<div class="modal modal-fx-fadeInScale" id="modal-account-edit-password">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Change Password</h2>
+    <hr>
+
+    <form action="{{url_for('password_edit')}}" method="post">
+      {{forms.email.hidden_tag()}}
+      <div class="field">
+        <div class="control">
+          {{forms.password.password(class_="input is-large")}}
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          {{forms.password.confirm(class_="input is-large")}}
+        </div>
+      </div>
+
+      {{forms.password.submit(class_="button is-block is-primary is-large is-fullwidth")}}
+    </form>
+
+  </div>
+</div>
+
+<div class="modal modal-fx-fadeInScale" id="modal-account-delete">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Delete Account</h2>
+    <hr>
+
+    <p class="subtitle">
+      This action will immediately suspend all active alerts and remove your account
+      from our system. This is irreversible.
+    </p>
+
+    <p class="subtitle">Are you sure want to delete your account?</p>
+    <a href="{{url_for('user_delete')}}" class="button is-block is-danger is-fullwidth">
+        I'M SURE, I WANT TO DELETE MY ACCOUNT PERMANENTLY
+    </a>
+
+  </div>
+</div>
+
+<div class="modal modal-fx-fadeInScale" id="modal-settings">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Settings</h2>
+    <hr>
+
+    <form action="{{url_for('user_settings_edit')}}" method="post">
+    {{forms.settings.hidden_tag()}}
+    <form class="form-horizontal" >
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+
+        <div class="field-label is-normal">
+          <label class="label">Default Alert Method</label>
+        </div>
+
+        <div class="field-body" style="flex-grow:1;">
+
+          <div class="field">
+            <div class="control has-text-left">
+              <div class="select">
+                {{forms.settings.method()}}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+
+        <div class="field-label is-normal">
+          <label class="label">Default Currency</label>
+        </div>
+
+        <div class="field-body" style="flex-grow:1;">
+
+          <div class="field">
+            <div class="control has-text-left">
+              <div class="select">
+                {{forms.settings.currency()}}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      <div class="field is-horizontal">
+
+        <div class="field-label is-normal">
+          <label class="label">Default Exchange</label>
+        </div>
+
+        <div class="field-body" style="flex-grow:1;">
+
+          <div class="field">
+            <div class="control has-text-left">
+              <div class="select">
+                {{forms.settings.exchange()}}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+      <!------------------------------------------------------------>
+
+      {{forms.settings.submit(class_="button is-block is-primary is-large is-fullwidth")}}
+    </form>
+
+  </div>
+</div>
+<!--------------------------------->
+<!-- end modals account/settings -->
+<!--------------------------------->
+
+{% else %}
+<!--------------------------------->
+<!-- start modals login/register -->
+<!--------------------------------->
+<div class="modal modal-fx-fadeInScale" id="modal-login">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Welcome back!</h2>
+    <hr>
+
+    <form action="{{url_for('login')}}" method="post">
+      {{forms.login.hidden_tag()}}
+      <div class="field">
+        <div class="control">
+          {{forms.login.email(class_="input is-large")}}
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          {{forms.login.password(class_="input is-large")}}
+        </div>
+      </div>
+
+      {{forms.login.submit(class_="button is-block is-primary is-large is-fullwidth")}}
+
+    </form>
+
+    <hr>
+    <p class="has-text-grey">
+      <a href="javascript:gotoRegisterModal()">Register</a> &nbsp;·&nbsp;
+      <a href="javascript:gotoRecoverModal()">Forgot Password</a> &nbsp;·&nbsp;
+    </p>
+
+  </div>
+</div>
+
+<div class="modal modal-fx-fadeInScale" id="modal-register">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">New Account</h2>
+    <hr>
+
+    <form action="{{url_for('register')}}" method="post">
+      {{forms.register.hidden_tag()}}
+      <div class="field">
+        <div class="control">
+         {{forms.register.email(class_="input is-large")}}
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="control">
+         {{forms.register.password(class_="input is-large")}}
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+         {{forms.register.confirm(class_="input is-large")}}
+        </div>
+      </div>
+
+      <label class="checkbox" style="margin: 20px;">
+      {{forms.register.captcha()}}
+      </label>
+
+      {{forms.register.submit(class_="button is-block is-primary is-large is-fullwidth")}}
+
+    </form>
+
+
+    <hr>
+    <p class="has-text-grey">
+      <a href="javascript:gotoLoginModal()">Login</a> &nbsp;·&nbsp;
+      <a href="javascript:gotoRecoverModal()">Forgot Password</a> &nbsp;·&nbsp;
+    </p>
+
+  </div>
+</div>
+
+<div class="modal modal-fx-fadeInScale" id="modal-recover-account">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Recover Account</h2>
+    <hr>
+
+    <form action="{{url_for('user_recover')}}" method="post">
+      {{forms.recover.hidden_tag()}}
+      <div class="field">
+        <div class="control">
+         {{forms.recover.email(class_="input is-large")}}
+        </div>
+      </div>
+
+      <label class="checkbox" style="margin: 20px;">
+        {{forms.recover.captcha()}}
+      </label>
+      {{forms.recover.submit(class_="button is-block is-primary is-large is-fullwidth")}}
+    </form>
+
+    <hr>
+    <p class="has-text-grey">
+      <a href="javascript:gotoLoginModal()">Login</a> &nbsp;·&nbsp;
+      <a href="javascript:gotoRegisterModal()">Register</a> &nbsp;·&nbsp;
+    </p>
+
+  </div>
+</div>
+<!------------------------------->
+<!-- end modals login/register -->
+<!------------------------------->
+
+{% endif %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

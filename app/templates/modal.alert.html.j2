@@ -1,0 +1,17 @@
+<div class="modal modal-fx-fadeInScale" id="modal-alert-delete">
+  <div class="modal-background"></div>
+  <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+    <h2 class="title is-2 is-spaced">Delete Alert</h2>
+    <hr>
+
+    <p class="subtitle">
+      This action will immediately delete the selected alert. This is irreversible.
+    </p>
+
+    <p class="subtitle">Are you sure want to delete this alert?</p>
+    <a href="{{url_for('alert_delete', hash="dumb")}}" class="button is-block is-danger is-fullwidth" id="modal-alert-delete-link"> Confirm</a>
+  </div>
+</div>
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

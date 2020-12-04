@@ -1,0 +1,16 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<h1 class="title">Email Confirmation Sent</h1>
+<hr>
+<div class="content">
+    <p><strong>Notice:</strong> An email confirmation has been sent to your
+        account, please review it to continue. <u>Haven't received the email?</u>
+    </p>
+    <p>
+        <a class="button is-warning" href="{{url_for('user_resend')}}">Resend</a>.
+    </p>
+  </p>
+</div>
+{% endblock %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

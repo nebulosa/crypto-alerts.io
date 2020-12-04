@@ -1,0 +1,5 @@
+---
+- hosts: docker
+  roles:
+    - { role: docker-multisite,
+        tags: [ 'docker-multisite' ] }

@@ -1,0 +1,33 @@
+<h1>Hi,</h1>
+
+<p>
+    <u><strong>{{alert.cryptocurrency}}</strong></u> has gone
+    <u><strong>{{alert.price_direction}}</strong></u>
+    <u><strong>${{alert.price}}</strong></u>
+    <u><strong>{{alert.currency}}</strong></u> on
+    <u><strong>{{alert.exchange}}</strong></u>
+</p>
+
+{% if alert.note %}
+<p>{{alert.note}}<p>
+{% endif %}
+
+{% if alert.user.email != alert.method_data %}
+<p>
+    This notification was configured by <strong>{{alert.user.email}}</strong>,
+    if it's an unsolicited alarm, please report it here:
+
+    {{APP_URL}}/alert/report/{{alert.hash}}
+</p>
+{% else %}
+<p>
+    Edit or Delete your Alert here:
+    {{APP_URL}}/alert/edit/{{alert.hash}}
+</p>
+{% endif %}
+
+Have a great day,
+
+<p><a href="{{APP_URL}}">{{APP_TITLE}}</a> Team</p>
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

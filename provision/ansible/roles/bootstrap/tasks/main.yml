@@ -1,0 +1,167 @@
+- name: lookup distro fact
+  raw: |
+    _distro() { #return distro name in lower string
+        _distro__DIST_INFO="/etc/lsb-release"
+        if [ -r "${_distro__DIST_INFO}" ]; then
+            . "${_distro__DIST_INFO}"
+        fi
+
+        if [ -z "${DISTRIB_ID}" ]; then
+            _distro__DISTRIB_ID="Unknown";
+            if [ -f /etc/arch-release ]; then
+                _distro__DISTRIB_ID="Arch"
+            elif [ -r /etc/knoppix-version ]; then
+                _distro__DISTRIB_ID="Knoppix"
+            elif [ -r /etc/sidux-version ]; then
+                _distro__DISTRIB_ID="Sidux"
+            elif [ -r /etc/debian_version ]; then
+                _distro__DISTRIB_ID="Debian"
+            elif [ -r /etc/issue ]; then
+                _distro__DISTRIB_ID="$(awk '{print $1}' /etc/issue.net)"
+                if [ X"${_distro__DISTRIB_ID}" = X"Ubuntu" ]; then
+                    _distro__DISTRIB_ID="Ubuntu"
+                fi
+            elif [ -r /etc/gentoo-release ]; then
+                _distro__DISTRIB_ID="Gentoo"
+            elif [ -f /etc/lfs-version ]; then
+                _distro__DISTRIB_ID="LFS"
+            elif [ -r /etc/pclinuxos-release ]; then
+                _distro__DISTRIB_ID="PCLinuxOS"
+            elif [ -f /etc/mandriva-release ] || [ -f /etc/mandrake-release ]; then
+                _distro__DISTRIB_ID="Mandriva"
+            elif [ -f /etc/redhat-release ]; then
+                _distro__DISTRIB_ID="RedHat"
+            elif [ -f /etc/fedora-release ]; then
+                _distro__DISTRIB_ID="Fedora"
+            elif [ -r /etc/vector-version ]; then
+                _distro__DISTRIB_ID="VectorLinux"
+            elif [ -r /etc/slackware-version ]; then
+                _distro__DISTRIB_ID="$(cat /etc/slackware-version)"
+            elif [ -f /etc/release ]; then
+                _distro__DISTRIB_ID="Solaris"
+            elif [ -r /etc/SuSE-release ]; then
+                _distro__DISTRIB_ID="$(grep -i suse /etc/SuSE-release)"
+            elif [ -f /etc/yellowdog-release ]; then
+                _distro__DISTRIB_ID="YellowDog Linux"
+            elif [ -f /etc/zenwalk-version ]; then
+                _distro__DISTRIB_ID="Zenwalk"
+            fi
+            printf "%s\\n" "${_distro__DISTRIB_ID}" | \
+                tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'
+        else
+            printf "%s\\n" "${DISTRIB_ID}" | \
+                tr 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' 'abcdefghijklmnopqrstuvwxyz'
+        fi
+    }
+    _distro
+  args:
+    warn: false
+  changed_when: false # this will never report 'changed' status
+  register: lookup_distro
+
+- name: set distro fact
+  set_fact: distro={{lookup_distro.stdout|trim}}
+  check_mode: no
+
+- debug: var=distro
+
+- name: set /etc/resolv.conf node file
+  raw: |
+    set -x
+    {# HEREDOCS doesn't seems to work with ansible raw module #}
+    {#
+      cat > /etc/resolv.conf << E=O=F
+
+      {% if resolv_nameservers is defined %}{% for nameserver in resolv_nameservers %}
+      nameserver {{nameserver}}
+      {% endfor %}{% endif %}
+
+      {% if resolv_search is defined %}
+      search {% for search in resolv_search %}{{search}}{% endfor %}
+      {% endif %}
+      E=O=F
+    #}
+
+    {# Therefore here's an ugly workaround #}
+    > /etc/resolv.conf
+    {% if resolv_nameservers is defined %}{% for nameserver in resolv_nameservers %}
+    echo nameserver {{nameserver}} >> /etc/resolv.conf
+    {% endfor %}{% endif %}
+
+    {% if resolv_search is defined %}
+    echo search {% for search in resolv_search %} {{search}}{% endfor %} >> /etc/resolv.conf
+    {% endif %}
+  args:
+    warn: false
+  when:
+    - resolv_nameservers is defined
+    - resolv_search is defined
+
+- name: add http/https proxy
+  raw: |
+    set -x
+
+    sed -i '/http_proxy/d'  /etc/environment
+    sed -i '/https_proxy/d' /etc/environment
+    sed -i '/ftp_proxy/d'   /etc/environment
+    sed -i '/no_proxy/d'    /etc/environment
+    sed -i '/http_proxy/d'  /etc/profile.d/proxy.sh
+    sed -i '/https_proxy/d' /etc/profile.d/proxy.sh
+    sed -i '/ftp_proxy/d'   /etc/profile.d/proxy.sh
+    sed -i '/no_proxy/d'    /etc/profile.d/proxy.sh
+
+    echo http_proxy='"{{http_proxy}}"'         >> /etc/environment
+    echo https_proxy='"{{http_proxy}}"'        >> /etc/environment
+    echo https_proxy='"{{http_proxy}}"'        >> /etc/environment
+    echo no_proxy='"{{no_proxy}}"'             >> /etc/environment
+    echo export http_proxy='"{{http_proxy}}"'  >> /etc/profile.d/proxy.sh
+    echo export https_proxy='"{{http_proxy}}"' >> /etc/profile.d/proxy.sh
+    echo export https_proxy='"{{http_proxy}}"' >> /etc/profile.d/proxy.sh
+    echo export no_proxy='"{{no_proxy}}"'      >> /etc/profile.d/proxy.sh
+
+    subscription-manager config --server.proxy_hostname={{proxy_host}} --server.proxy_port={{proxy_port}} || :
+  args:
+    warn: false
+  register: raw_output
+  when: http_proxy is defined
+
+- debug: var=raw_output.stdout_lines
+  when: http_proxy is defined
+
+- name: install ansible dependencies
+  include_tasks: install-ansible-dependencies.{{distro}}.yml
+
+- name: ensure ansible dependencies are executable
+  raw: test -f {{item}} && chmod -R 755 {{item}}
+  args:
+    warn: false
+  with_items:
+    - '/usr/bin/python2.7'
+
+- name: add "wheel" group
+  group: name="wheel" state=present
+
+- name: allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: per-user group creation
+  group: name="{{item.username}}"
+  with_items: "{{system_users}}"
+
+- name: create system users
+  user: name="{{item.username}}"
+        group="{{item.username}}"
+        groups="{{item.groups | join(',')}}"
+        shell={{item.shell if item.shell is defined else '/bin/bash'}}
+        password="{{item.password if item.password is defined else '!'}}"
+        createhome="yes"
+  with_items: "{{system_users}}"
+
+#- name: set up authorized_keys for system users
+  #authorized_key: user={{item.username}} key="{{lookup('file', '~/.ssh/id_rsa.pub')}}"
+  #with_items: "{{system_users}}"

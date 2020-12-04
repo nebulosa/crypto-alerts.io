@@ -1,0 +1,24 @@
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script type="text/javascript">
+    // self executing function here
+    (function() {
+    {% for message in messages %}
+    // your page initialization code here
+    // the DOM will be available here
+    bulmaToast.toast({
+        message: '{{message}}',
+        type: 'is-danger',
+        duration: 4000,
+        dismissible: true,
+        pauseOnOver: true,
+        position: 'top-center',
+        animate: { in: 'fadeIn', out: 'fadeOut' },
+    })
+    {% endfor %}
+    })();
+    </script>
+  {% endif %}
+{% endwith %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

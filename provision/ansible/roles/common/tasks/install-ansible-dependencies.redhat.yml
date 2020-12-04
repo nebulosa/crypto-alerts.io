@@ -1,0 +1,38 @@
+- name: subscribe node to rhsm
+  raw: |
+    set -x
+    if ! subscription-manager list | grep -q Subscribed; then
+      subscription-manager register --username {{vault_rhsm_public_username}} --password {{vault_rhsm_public_password}} --auto-attach --force
+    fi
+  args:
+    warn: false
+  register: raw_output
+
+- debug: var=raw_output.stdout_lines
+
+- name: enable EPEL repository
+  raw: |
+    set -x
+    if ! rpm -qa | grep -qw epel-release; then
+      yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    fi
+  args:
+    warn: false
+  register: raw_output
+
+- debug: var=raw_output.stdout_lines
+
+- name: install ansible dependencies
+  raw: test -f {{item.cmd}} || yum -y install {{item.pkg}}
+  args:
+    warn: false
+  register: ansible_dependencies
+  ignore_errors: true
+  with_items:
+    - { cmd: '/usr/bin/python', pkg: 'python' }
+    - { cmd: '/usr/bin/pip',    pkg: 'python-pip' }
+    - { cmd: '/usr/bin/sudo',   pkg: 'sudo' }
+
+- name: workaround rhel-7-server-rt-beta-rpms unstable
+  include_tasks: disable-rhel-7-server-rt-beta-rpms.yml
+  when: ansible_dependencies|failed

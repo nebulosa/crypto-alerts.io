@@ -1,0 +1,15 @@
+---
+- name: restart systemd
+  command: systemctl daemon-reload #can be changed to systemd module when Ansible 2.4
+  become: yes
+  become_method: sudo
+
+- name: restart docker
+  service: name=docker state=restarted
+  become: yes
+  become_method: sudo
+
+- name: restart rsyslog
+  service: name=rsyslog state=restarted
+  become: yes
+  become_method: sudo

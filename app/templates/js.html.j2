@@ -1,0 +1,31 @@
+<script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+<script src="https://unpkg.com/bulma-toast@2.1.0/dist/bulma-toast.min.js"></script>
+<script src="https://unpkg.com/bulma-modal-fx/dist/js/modal-fx.min.js"></script>
+
+{# searchable select #}
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/css/select2.min.css"/>
+<link rel="stylesheet" href="/static/css/select2.css">
+{# searchable select #}
+
+{% if current_user.is_authenticated %}
+<script src="/static/js/modal.authenticated.js"></script>
+{% else  %}
+<script src="/static/js/modal.unauthenticated.js"></script>
+{% endif %}
+
+<script src="/static/js/mobile.hooks.js"></script>
+
+<script type="text/javascript" src="https://widget.coinlore.com/widgets/ticker-widget.js"></script>
+<div class="coinlore-priceticker-widget" data-mcurrency="usd"
+  style="position:fixed; bottom:0;"
+  data-bcolor="#fff" data-scolor="#333" data-ccolor="#428bca" data-pcolor="#428bca">
+</div>
+
+{% if APP_PARTICLES_BG_EFFECT %}
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script src="/static/js/particles.load.settings.js"></script>
+{% endif %}
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

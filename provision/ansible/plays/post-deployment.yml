@@ -1,0 +1,5 @@
+---
+- hosts: all
+  roles:
+    - { role: post-deployment,
+        tags: [ 'post-deployment' ] }

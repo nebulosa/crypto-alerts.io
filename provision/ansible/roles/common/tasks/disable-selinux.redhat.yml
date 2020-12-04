@@ -1,0 +1,8 @@
+- name: disable selinux
+  selinux: state=disabled
+
+- name: set SELinux in permissive mode until the machine is rebooted
+  command: setenforce 0
+  ignore_errors: true
+  changed_when: false
+

@@ -1,0 +1,11 @@
+---
+- hosts: all
+  roles:
+    - { role: facts,
+        tags: [ 'common', 'facts' ] }
+    - { role: cache-pkgs,
+        tags: [ 'common', 'cache-pkgs' ] }
+    - { role: common,
+        tags: [ 'common' ] }
+    - { role: minos,
+        tags: [ 'minos' ] }

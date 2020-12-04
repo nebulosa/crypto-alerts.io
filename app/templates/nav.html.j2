@@ -1,0 +1,44 @@
+<!------------------------------>
+<!-- start navigation section -->
+<!------------------------------>
+<nav class="navbar is-fixed-top has-background-white-bis" role="navigation" aria-label="main navigation">
+  <div class="container">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/index.html">
+      <i class="fab fa-btc"></i>&nbsp;&nbsp; Crypto Alerts
+      </a>
+
+      <a class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navLoginMenu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="navLoginMenu" class="navbar-menu">
+      <div class="navbar-end">
+        <div class="navbar-item">
+            <a href="{{url_for('terms_of_service')}}" class="has-text-grey-dark mr-4" title="Terms of Service">Terms of Service</a>
+        {% if current_user.is_authenticated %}
+            <a id="alerts"   class="has-text-dark" title="Alerts" href="{{url_for('alerts')}}">
+                <i class="fas fa-concierge-bell is-size-4 mr-4"></i>
+            </a>
+            <a id="notifications" class="has-text-dark" title="Notifications" href="{{url_for('notifications')}}">
+                <i class="fas fa-bell is-size-4 mr-4"></i>
+            </a>
+            <a id="settings" class="has-text-dark" title="Settings"><i class="fas fa-cog is-size-4 mr-4"></i></a>
+            <a id="account"  class="has-text-dark" title="Account"><i class="fas fa-user-astronaut is-size-4 mr-4"></i></a>
+        {% else %}
+            <a class="button is-light mr-2"   id="register"> <strong>Register</strong> </a>
+            <a class="button is-primary" id="login"> Log in </a>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+<!---------------------------->
+<!-- end navigation section -->
+<!---------------------------->
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

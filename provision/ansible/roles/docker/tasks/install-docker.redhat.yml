@@ -1,0 +1,35 @@
+- name: check if docker repo is already configured
+  stat: path=/etc/yum.repos.d/docker-{{docker_edition}}.repo
+  register: docker_repofile
+
+- name: add docker repository
+  get_url:
+    url: '{{docker_repo_url}}'
+    dest: '/etc/yum.repos.d/docker-{{docker_edition}}.repo'
+    owner: root
+    group: root
+    mode: 0644
+  when: not docker_repofile.stat.exists
+
+- name: add docker GPG key
+  rpm_key: key="{{docker_gpg_key_url}}" state=present
+  when: not docker_repofile.stat.exists
+
+- name: install docker-{{docker_edition}} {{docker_version}}
+  yum: name=docker-{{docker_edition}}-{{docker_version}}.ce state=present
+  register: docker_installed
+  ignore_errors: true
+
+- name: workaround https://stackoverflow.com/questions/45272827/docker-ce-on-rhel-requires-container-selinux-2-9
+  include_tasks: docker-ce-on-rhel-requires-container-selinux-2-9.yml
+  when: docker_installed|failed
+
+- name: create docker group
+  group: name=docker state=present
+
+- name: add docker administrators to the docker group
+  user:
+    name: "{{item}}"
+    groups: "docker"
+    append: true
+  with_items: "{{docker_admin_users}}"

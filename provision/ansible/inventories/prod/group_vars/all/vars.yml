@@ -1,0 +1,73 @@
+###########
+#   Meta  #
+###########
+skip_bootstrap:        false
+skip_common:           false
+skip_docker:           false
+skip_docker_multisite: false
+skip_dockerized_app:   false
+skip_post_deployment:  false
+
+###########
+# General #
+###########
+env: prod
+persistent_storage_path: /persistent_storage
+logs_path: "{{persistent_storage_path}}/logs"
+
+system_users:
+  - username: ansible
+    password: '{{vault_ansible_password}}' #openssl passwd -salt salt -1 'same'
+    groups: ['wheel']
+    shell: /bin/bash
+
+##########
+# Docker #
+##########
+docker_edition: 'ce' #Community Edition or 'ee' for Enterprise Edition
+docker_version: 19.03.13
+
+docker_daemon_tcp_port: 2375
+docker_daemon_memory_maxpct: 90
+docker_daemon_CPU_maxpct: 90
+docker_restart_policy_retry: 5
+docker_containers_log_path: "{{logs_path}}/docker/containers"
+docker_containers_volume_path: "{{persistent_storage_path}}/volumes/docker/containers"
+
+docker_admin_users:
+  - "{{ansible_user}}"
+
+#https://docs.docker.com/engine/userguide/storagedriver/selectadriver/
+#docker_storage_driver:  'overlay'
+docker_storage_driver: 'overlay2'
+#docker_storage_driver: 'devicemapper'
+
+#only evaluated when docker_storage_driver == devicemapper
+docker_volume_disks:           #optional
+  - /dev/sdb
+  - /dev/sdc
+  - /dev/sdd
+docker_volume_group: vg_docker #required
+
+##################
+# Docker compose #
+##################
+docker_compose_version: 1.27.4
+
+####################
+# Docker multisite #
+####################
+acme_email: m@javier.io
+
+##########################
+# Dockerized: app        #
+##########################
+app_compose: docker-compose-cherry.multisite.ssl.yml
+
+#app_compose: docker-compose-cherry-ssl.yml
+#app_compose: docker-compose-gunicorn-ssl.yml
+
+#app_compose: docker-compose-cherry.yml
+#app_compose: docker-compose-gunicorn.yml
+
+app_db_max_backups: 7

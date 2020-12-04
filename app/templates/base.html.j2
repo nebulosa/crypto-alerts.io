@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% include "meta.html.j2" %}
+  {% block    meta %}{% endblock %}
+  {% if title %}
+  <title>{{ title }} - {{APP_TITLE}}</title>
+  {% else %}
+  <title>{{APP_TITLE}}</title>
+  {% endif %}
+</head>
+
+<body class="has-navbar-fixed-top">
+    {% if APP_PARTICLES_BG_EFFECT %}
+    <div id="particles-js"></div>
+    {% endif %}
+
+    {% include "nav.html.j2" %}
+    {% include "header.html.j2" %}
+
+    <!------------------------>
+    <!-- start main section -->
+    <!------------------------>
+    <section class="section has-text-centered">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    </section>
+    <!------------------------>
+    <!-- end main section -->
+    <!------------------------>
+
+  {% include "modal.html.j2" %}
+  {% include "footer.html.j2" %}
+  {% include "js.html.j2" %}
+  {% block    js %}{% endblock %}
+  {% include "notification.js.j2" %}
+</body>
+</html>
+
+{# vim: set ts=8 sw=4 tw=0 ft=jinja2.html #}

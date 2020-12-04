@@ -1,0 +1,18 @@
+- name: update apt index
+  raw: apt-get update -y
+  args:
+    warn: false
+
+- name: install ansible dependencies
+  raw: test -f {{item.cmd}} || DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y {{item.pkg}}
+  args:
+    warn: false
+  register: ansible_dependencies
+  ignore_errors: true
+  with_items:
+    - { cmd: '/usr/bin/python',         pkg: 'python'         }
+    - { cmd: '/usr/bin/pip',            pkg: 'python-pip'     }
+    - { cmd: '/usr/bin/sudo',           pkg: 'sudo'           }
+    - { cmd: '/usr/bin/python-selinux', pkg: 'python-selinux' }
+    - { cmd: '/usr/bin/gpg',            pkg: 'gpg'            }
+    - { cmd: '/usr/bin/gpg-agent',      pkg: 'gpg-agent'      }

@@ -1,0 +1,121 @@
+- name: create docker logs directory
+  file: path='{{docker_containers_log_path}}' state=directory owner=syslog
+
+- name: verify if docker is installed
+  stat: path=/usr/bin/docker
+  register: docker_installed
+
+- name: install docker
+  include_tasks: install-docker.{{distro}}.yml
+  when: not docker_installed.stat.exists
+
+- name: docker -v
+  raw:  docker -v
+  args:
+    warn: false
+  register: raw_output
+
+- debug: var=raw_output.stdout_lines
+
+- name: add docker group
+  group: name=docker
+
+- name: add docker user
+  user: name=docker group=docker
+
+- name: ensure /etc/docker directory is owned by docker:docker user/group
+  file: path=/etc/docker state=directory mode=0755 owner=docker group=docker
+
+- name: use docker without sudo
+  shell: |
+    USERS="$(busybox cat /etc/passwd | busybox awk -F: '{if ($3 >= 1000 && $3 < 60000) print $1}')"
+
+    for user in ${USERS}; do
+        usermod -aG docker "${user}" || :
+    done
+    newgrp docker || :
+
+- name: setup docker '{{docker_storage_driver}}' storage driver
+  include_tasks: docker-storage-driver-{{docker_storage_driver}}.yml
+
+- name: create /etc/systemd/system/docker.service.d configuration directory
+  file: path=/etc/systemd/system/docker.service.d state=directory
+
+- name: copy docker config files
+  template: src={{item}} dest=/etc/systemd/system/docker.service.d/{{item | basename | regex_replace('\.j2','')}} mode=0644
+  with_items:
+    - docker-common.j2
+    - docker-storage-{{docker_storage_driver}}.j2
+    - docker-network.j2
+    #- docker-registry.j2
+  notify:
+    - restart docker
+
+- name: syslink /etc/systemd/system/docker.service.d/docker-storage => /etc/systemd/system/docker.service.d/docker-storage-{{docker_storage_driver}}
+  file: src=/etc/systemd/system/docker.service.d/docker-storage-{{docker_storage_driver}} dest=/etc/systemd/system/docker.service.d/docker-storage state=link
+  notify:
+    - restart docker
+
+- name: configure docker proxy settings in /etc/systemd/system/docker.service.d/docker-network
+  shell: sed -i 's:^#::g' /etc/systemd/system/docker.service.d/docker-network
+  register: sed_docker_network
+  args:
+    warn: false
+  when: http_proxy is defined
+  notify:
+    - restart docker
+
+- name: copy slice unit
+  template: src=docker.slice.j2 dest=/etc/systemd/system/docker.slice
+  notify:
+    - restart systemd
+    - restart docker
+
+- name: copy docker/systemd configuration
+  copy: src=docker.service.d##docker.conf dest=/etc/systemd/system/docker.service.d/docker.conf
+  notify:
+    - restart systemd
+
+- name: create certificates directory
+  file: path=/etc/docker/certs.d/{{item | basename}} state=directory owner=docker group=docker
+  tags: update_docker_cert
+  with_fileglob:
+    - certs/*
+
+- name: add certificates
+  copy: src={{item}} dest=/etc/docker/certs.d/{{item | basename}}/ca.crt owner=docker group=docker
+  with_fileglob:
+    - certs/*
+
+- name: remove ipv6 options
+  sysctl:
+    name: net.ipv6.conf.all.disable_ipv6
+    state: absent
+
+- name: set ip forward 1
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    reload: yes
+
+- name: increase vm.max_map_count value
+  sysctl:
+    name: vm.max_map_count
+    value: 262144
+    state: present
+    reload: yes
+
+- name: enable docker service
+  systemd: name=docker enabled=yes
+
+- name: ensure docker daemon is running
+  service: name=docker enabled=yes state=started
+
+- name: copy rsyslog docker configuration
+  template: src=rsyslog.docker.conf.j2 dest=/etc/rsyslog.d/10-docker.conf
+  notify:
+    - restart rsyslog
+
+- name: copy logrotate docker configuration
+  template: src=logrotate.docker.j2 dest=/etc/logrotate.d/docker

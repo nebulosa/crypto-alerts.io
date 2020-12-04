@@ -1,0 +1,14 @@
+- name: install software-properties-common apt-transport-https
+  apt: name={{item}} state=present install_recommends=no update_cache=yes cache_valid_time=86400
+  with_items:
+    - software-properties-common
+    - apt-transport-https
+
+- name: add minos repository
+  raw: |
+    add-apt-repository -y ppa:minos-archive/main && apt-get update -y
+
+- name: install minos-core
+  apt: name={{item}} state=present install_recommends=no update_cache=yes cache_valid_time=86400
+  with_items:
+    - minos-core

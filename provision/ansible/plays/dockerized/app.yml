@@ -1,0 +1,4 @@
+- hosts: app
+  roles:
+    - { role: app,
+        tags: [ 'services', 'dockerized', 'app' ] }

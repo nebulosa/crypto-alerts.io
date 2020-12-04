@@ -1,0 +1,9 @@
+- name: reinstall pip
+  raw: |
+    pip install --force-reinstall -U setuptools
+    pip install --force-reinstall -U pip
+  args:
+    warn: false
+
+- name: retry install docker API client, {{docker_py_version}}
+  pip: name=docker version={{docker_py_version}} state=present

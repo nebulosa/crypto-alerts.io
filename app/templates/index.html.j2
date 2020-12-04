@@ -1,0 +1,19 @@
+{% extends "base.alert.html.j2" %}
+
+{% block h1_title %}
+  <h1 class="title">Price Alert</h1>
+{% endblock %}
+
+{% block form_action_url %}
+  <form class="form-horizontal" action="{{url_for('alert_add')}}" method="post">
+{% endblock %}
+
+{% block form_submit %}
+  {% if current_user.is_authenticated %}
+      <button class="button is-primary">Set Alert</button>
+  {% else %}
+      <button class="button is-primary" title="Login or Register" disabled>Set Alert</button>
+  {% endif %}
+{% endblock %}
+
+{# vim: set ts=4 sw=2 tw=0 ft=jinja2.html #}

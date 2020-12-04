@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crypto Alerts</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <!--<link rel="stylesheet" href="assets/css/particles.override.css">-->
+</head>
+
+<body class="has-navbar-fixed-top">
+  <!--<div id="particles-js"></div>-->
+
+  <!------------------------------>
+  <!-- start navigation section -->
+  <!------------------------------>
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="index.html">
+        <i class="fab fa-btc"></i>&nbsp;&nbsp; Crypto Alerts
+        </a>
+
+        <a class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navLoginMenu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+
+      <div id="navLoginMenu" class="navbar-menu">
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <a href="terms-of-service.html" class="has-text-grey-dark">Terms of Service</a>
+          </div>
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-light" id="register"> <strong>Register</strong> </a>
+              <a class="button is-primary" id="login"> Log in </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <!---------------------------->
+  <!-- end navigation section -->
+  <!---------------------------->
+
+  <!-------------------------->
+  <!-- start header section -->
+  <!-------------------------->
+  <section class="hero is-big is-primary is-bold">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">Crytocurrency Alerting</h1>
+        <h2 class="subtitle">Get notified when a coin goes above or below a price target. No bullshit.</h2>
+      </div>
+    </div>
+  </section>
+  <!------------------------>
+  <!-- end header section -->
+  <!------------------------>
+
+  <!------------------------>
+  <!-- start main section -->
+  <!------------------------>
+  <section class="section has-text-centered">
+    <div class="container">
+      <h1 class="title">Terms of Service</h1>
+      <hr>
+      <div class="content has-text-left">
+        <h2 class="subtitle">Limits:</h2>
+        <ul>
+          <li>100 active alerts / unlimited inactive alerts</li>
+          <li>1000 notifications per month</li>
+        </ul>
+
+        <h2 class="subtitle">Third-party Services:</h2>
+        <p>
+          From time to time, we may provide you with links to third party
+          websites or services that we do not own or control. Your use of the
+          Service may also include the use of applications that are developed
+          or owned by a third party. Your use of such third party applications,
+          websites, and services is governed by that party's own terms of
+          service or privacy policies. We encourage you to read the terms and
+          conditions and privacy policy of any third party application, website
+          or service that you visit or use.
+        </p>
+
+        <h2 class="subtitle">Accepting these Terms</h2>
+        <p>
+          If you access or use the Service, it means you agree to be bound by
+          all of the terms below. So, before you use the Service, please read
+          all of the terms. If you don't agree to all of the terms below, please
+          do not use the Service.
+        </p>
+      </div>
+    </div>
+  </section>
+  <!------------------------>
+  <!-- end main section -->
+  <!------------------------>
+
+  <!--------------------------------->
+  <!-- start modals login/register -->
+  <!--------------------------------->
+  <div class="modal" id="modal-login">
+    <div class="modal-background"></div>
+    <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+      <h2 class="title is-2 is-spaced">Welcome back!</h2>
+      <hr class="login-hr">
+
+      <form>
+        <div class="field">
+          <div class="control">
+            <input class="input is-large" type="email" placeholder="Email" autofocus="">
+          </div>
+        </div>
+        <div class="field">
+          <div class="control">
+            <input class="input is-large" type="password" placeholder="Password">
+          </div>
+        </div>
+      </form>
+
+      <label class="checkbox" style="margin: 20px;">
+        <input type="checkbox">
+          Remember me
+      </label>
+      <button class="button is-block is-primary is-large is-fullwidth">Login</button>
+
+      <hr class="login-hr">
+      <p class="has-text-grey">
+        <a href="javascript:gotoRegisterModalView()">Register</a> &nbsp;·&nbsp;
+        <a href="javascript:gotoRecoverModalView()">Forgot Password</a> &nbsp;·&nbsp;
+      </p>
+
+    </div>
+  </div>
+
+  <div class="modal" id="modal-register">
+    <div class="modal-background"></div>
+    <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+      <h2 class="title is-2 is-spaced">New Account</h2>
+      <hr class="login-hr">
+
+      <form>
+        <div class="field">
+          <div class="control">
+            <input class="input is-large" type="email" placeholder="Email" autofocus="">
+          </div>
+        </div>
+        <div class="field">
+          <div class="control">
+            <input class="input is-large" type="password" placeholder="Password">
+          </div>
+        </div>
+        <div class="field">
+          <div class="control">
+            <input class="input is-large" type="password" placeholder="Confirm Password">
+          </div>
+        </div>
+      </form>
+
+      <label class="checkbox" style="margin: 20px;">
+        <input type="checkbox">
+          I'm not a robot
+      </label>
+      <button class="button is-block is-primary is-large is-fullwidth">Register</button>
+
+      <hr class="login-hr">
+      <p class="has-text-grey">
+        <a href="javascript:gotoLoginModalView()">Login</a> &nbsp;·&nbsp;
+        <a href="javascript:gotoRecoverModalView()">Forgot Password</a> &nbsp;·&nbsp;
+      </p>
+
+    </div>
+  </div>
+
+  <div class="modal" id="modal-recover-account">
+    <div class="modal-background"></div>
+    <div class="modal-content has-background-white py-5 px-5 has-text-centered">
+
+      <h2 class="title is-2 is-spaced">Recover Account</h2>
+      <hr class="login-hr">
+
+      <form>
+        <div class="field">
+          <div class="control">
+            <input class="input is-large" type="email" placeholder="Email" autofocus="">
+          </div>
+        </div>
+      </form>
+
+      <label class="checkbox" style="margin: 20px;">
+        <input type="checkbox">
+          I'm not a robot
+      </label>
+      <button class="button is-block is-primary is-large is-fullwidth">Recover Account</button>
+
+      <hr class="login-hr">
+      <p class="has-text-grey">
+        <a href="javascript:gotoLoginModalView()">Login</a> &nbsp;·&nbsp;
+        <a href="javascript:gotoRegisterModalView()">Register</a> &nbsp;·&nbsp;
+      </p>
+
+    </div>
+  </div>
+  <!------------------------------->
+  <!-- end modals login/register -->
+  <!------------------------------->
+
+  <!-------------------------->
+  <!-- start footer section -->
+  <!-------------------------->
+
+  <!--<footer class="footer">-->
+    <!--<div class="container">-->
+      <!--<div class="content has-text-centered">-->
+        <!--<p>Donations-->
+        <!--</p>-->
+        <!--<p>-->
+          <!--BTC: <strong>14DSQGwK1MQJ1SvihrZqmxW4wVXF9o8ExN</strong> /-->
+          <!--ETH: <strong>0xd417223647a6C343De57cBa7FCd3634FCfAEECdD</strong>-->
+        <!--</p>-->
+    <!--</div>-->
+  <!--</footer>-->
+
+  <!------------------------>
+  <!-- end footer section -->
+  <!------------------------>
+
+  <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+  <script src="assets/js/modal.login.js"></script>
+  <script src="assets/js/mobile.hooks.js"></script>
+  <script type="text/javascript" src="https://widget.coinlore.com/widgets/ticker-widget.js"></script>
+  <div class="coinlore-priceticker-widget" data-mcurrency="usd"
+    data-bcolor="#fff" data-scolor="#333" data-ccolor="#428bca" data-pcolor="#428bca">
+  </div>
+
+  <!--<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>-->
+  <!--<script src="assets/js/particles.load.settings.js"></script>-->
+</body>
+</html>
+
+<!-- vim: set ts=2 sw=2 tw=0 ft=html :-->

@@ -1,0 +1,31 @@
+{% macro render_pagination(request, pagination) %}
+<div class="pagination_wrapper">
+
+    <div class="pagination">
+        {% if pagination.has_prev %}
+        <a class="previous_page" href="{{url_for(request.endpoint, **dict(request.view_args, page=pagination.prev_num))}}">← Anterior</a>
+        {% else %}
+        <span class="previous_page">← Anterior</span>
+        {% endif %}
+
+        {% for page in pagination.iter_pages() %}
+            {% if page == pagination.page %}
+            <em class="current">{{page}}</em>
+            {% else %}
+                {% if page %}
+                <a href="{{url_for(request.endpoint, **dict(request.view_args, page=page))}}">{{page}}</a>
+                {% else %}
+                <span>...</span>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <a class="next_page" href="{{url_for(request.endpoint, **dict(request.view_args, page=pagination.next_num))}}">Siguiente →</a>
+        {% else %}
+        <span class="next_page">Siguiente →</span>
+        {% endif %}
+    </div>
+
+</div>
+{% endmacro %}

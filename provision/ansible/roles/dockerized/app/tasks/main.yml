@@ -1,0 +1,100 @@
+- name: upload app's env
+  copy: src={{item}} dest="/tmp/"
+  with_fileglob:
+    - files/.env*
+
+- name: read app's domain
+  shell: |
+    if [ -f /tmp/.env.{{env}} ]; then
+      cp /tmp/.env.{{env}} /tmp/app.env
+    else
+      cp /tmp/.env /tmp/app.env
+    fi
+
+    grep "APP_DOMAIN=" /tmp/app.env > /tmp/app_name
+    . /tmp/app_name
+    echo "${APP_DOMAIN}"
+  changed_when: false # this will never report 'changed' status
+  register: app_name
+
+- name: set app_name fact
+  set_fact: app_name={{app_name.stdout}}
+  check_mode: no
+
+- debug: var=app_name
+
+- name: upload files
+  copy: src={{item}} dest="{{docker_containers_volume_path}}/{{app_name}}/"
+  with_fileglob:
+    - files/*
+    - files/.env*
+    - files/.dockerignore
+
+- name: verify if rsync is installed
+  stat: path=/usr/bin/rsync
+  register: rsync_installed
+
+- name: install rsync
+  include_tasks: install-rsync.{{distro}}.yml
+  when: not rsync_installed.stat.exists
+
+- name: upload directories
+  synchronize: src={{item}} dest="{{docker_containers_volume_path}}/{{app_name}}"  \
+               delete=yes recursive=yes copy_links=yes
+  with_items:
+    - app
+    - nginx
+    - extra
+
+- name: create service docker volume directories
+  file: path={{docker_containers_volume_path}}/{{app_name}}/ state=directory
+  with_items:
+    - app/mongodb-data
+
+- name: verify if zip is installed
+  stat: path=/usr/bin/zip
+  register: zip_installed
+
+- name: install zip
+  include_tasks: install-zip.{{distro}}.yml
+  when: not zip_installed.stat.exists
+
+- name: backup mongodb app every 6hrs
+  cron:
+    name:   "backup mongodb app once everyday, keep {{app_db_max_backups}} copies"
+    hour:   "22"
+    minute: "00"
+    job:    "{{docker_containers_volume_path}}/{{app_name}}/extra/db-backup.sh {{app_db_max_backups}}"
+
+- name: setup default env.prod => .env
+  shell: |
+    cd {{docker_containers_volume_path}}/{{app_name}}/
+
+    if [ -f .env.{{env}} ]; then
+      rm -rf .env; ln -s .env.{{env}} .env
+    fi
+
+- name: replace app's traefik domain with {{app_name}}
+  shell: |
+    cd {{docker_containers_volume_path}}/{{app_name}}/
+
+    sed -i 's:Host(`.*`:Host(`{{app_name}}`:g' {{app_compose}}
+
+- name: build app stack
+  #/tmp usually doesn't have enough space for docker-compose build step
+  shell: |
+    export TMPDIR=$HOME; echo "$TMPDIR"
+    cd {{docker_containers_volume_path}}/{{app_name}} && \
+    docker-compose -f {{app_compose}} build
+  register: app_built
+
+- debug: var=app_built
+
+- name: deploy app stack
+  shell: |
+    export TMPDIR=$HOME; echo "$TMPDIR"
+    cd {{docker_containers_volume_path}}/{{app_name}} && \
+    docker-compose -f {{app_compose}} up -d
+  register: app_exec
+
+- debug: var=app_exec

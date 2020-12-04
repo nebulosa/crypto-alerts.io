@@ -1,0 +1,1 @@
+DOCKER_STORAGE_OPTIONS=--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/{{docker_volume_group}}-thinpool --storage-opt dm.blocksize=512K --storage-opt dm.use_deferred_removal=true

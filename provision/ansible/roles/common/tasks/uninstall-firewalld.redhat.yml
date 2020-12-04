@@ -1,0 +1,4 @@
+- name: uninstall firewalld
+  yum: name={{item}} state=absent
+  with_items:
+    - firewalld

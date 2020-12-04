@@ -1,0 +1,1 @@
+OPTIONS='-H 0.0.0.0:{{docker_daemon_tcp_port}} -H unix:///var/run/docker.sock --exec-opt native.cgroupdriver=cgroupfs --cgroup-parent docker.slice{% if roles is defined %}{% for item in roles %} --label {{item}}=true{% endfor %}{% endif %}'

@@ -1,0 +1,35 @@
+- name: post-deployment
+  shell: echo 'Post-deployment'
+  args:
+    warn: false
+
+- name: install ufw
+  apt: name={{item}} state=present install_recommends=no update_cache=yes cache_valid_time=86400
+  with_items:
+    - ufw
+
+- name: install mosh
+  apt: name={{item}} state=present install_recommends=no update_cache=yes cache_valid_time=86400
+  with_items:
+    - mosh
+
+- name: configure ufw rules
+  ufw: rule={{item.rule}} port={{item.port}} proto={{item.proto}}
+  with_items:
+    - { rule: 'allow', port: '22',  proto: 'tcp' }
+    - { rule: 'allow', port: '80',  proto: 'tcp' }
+    - { rule: 'allow', port: '443', proto: 'tcp' }
+    - { rule: 'allow', port: '6000:61000', proto: 'udp' }
+  notify:
+    - restart ufw
+
+- name: set firewall default policy
+  ufw: state=enabled policy=reject
+
+- name: enable ufw logging
+  ufw: logging=on
+  notify:
+    - restart ufw
+
+- name: enable ufw
+  ufw: state=enabled
