@@ -6,6 +6,7 @@ from flask_login import current_user
 from app         import app, db, bcrypt
 from app.mail    import send_notification_email
 
+import time
 import app.constants as constants
 
 class User(db.Document):
@@ -21,6 +22,7 @@ class User(db.Document):
                     'acked'      : False,
                 }])
 
+    emails_per_month = db.DictField(required=False)
     spam_strikes = db.IntField(required=True, default=0)
 
     #can be calculated from the status array but saved here for performance
@@ -150,6 +152,15 @@ class User(db.Document):
                 ).save()
             send_notification_email(new_notification)
             return True
+
+    def emails_this_month(self, add=None):
+        year, month = map(str, time.strftime("%Y %b").split())
+        year_month  = year + "_" + month
+
+        if add:
+            self.emails_per_month[year_month] = self.emails_per_month.get(year_month, 0) + add
+
+        return self.emails_per_month.get(year_month, 0)
 
     @property
     def is_confirmed(self):

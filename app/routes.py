@@ -17,7 +17,8 @@ from app.token      import confirm_status_token
 from app.utils      import flash_form_errors
 from app.utils      import resend_after_to_seconds, seconds_to_resend_after
 from app.models     import User, Alert
-from app.alerts     import alert_meets_criteria, alert_trigger
+from app.alerts     import alert_meets_price_criteria, alert_meets_max_emails_criteria
+from app.alerts     import alert_trigger
 from app.exchanges  import sync_binance_prices, sync_bitso_prices
 from app.exchanges  import supported_currencies, supported_cryptocurrencies
 from app.exchanges  import supported_currencies_dict, supported_cryptocurrencies_dict
@@ -344,7 +345,7 @@ def alert_add():
             notify_only_once=form.notify_only_once.data,
         )
 
-        if alert_meets_criteria(alert):
+        if alert_meets_price_criteria(alert):
             flash("{} price ${} {} is already {} ${} {} on {}, retry with new parameters".format(
                 alert.cryptocurrency,
                 get_current_price(alert.exchange, alert.currency, alert.cryptocurrency), alert.currency,
@@ -353,6 +354,10 @@ def alert_add():
                 alert.exchange
             ))
             return redirect(url_for('index'))
+
+        if not alert_meets_max_emails_criteria(alert):
+            flash("Max amount of active alerts reached: {}".format(app.config['APP_MAX_ALERTS_PER_MONTH']))
+            return redirect(url_for('terms_of_service'))
 
         alert.save()
         flash("Alert added successfully!")
@@ -383,8 +388,12 @@ def alert_toggle_state(hash):
         flash("Such alert doesn' exists")
         return redirect(url_for('alerts'))
 
+    if not alert.active and not alert_meets_max_emails_criteria(alert):
+        flash("Max amount of active alerts reached: {}".format(app.config['APP_MAX_ALERTS_PER_MONTH']))
+        return redirect(url_for('terms_of_service'))
+
     alert.active = not alert.active
-    alert.save()
+    alert.save(clean=False)
     return redirect(url_for('alerts'))
 
 @app.route('/alert/edit/<hash>', methods=['GET', 'POST'])
@@ -417,7 +426,7 @@ def alert_edit(hash):
         alert.resend_after     = resend_after_to_seconds(form.resend_after.data)
         alert.notify_only_once = form.notify_only_once.data
 
-        if alert_meets_criteria(alert):
+        if alert_meets_price_criteria(alert):
             flash("{} price ${} {} is already {} ${} {} on {}, retry with new parameters".format(
                 alert.cryptocurrency,
                 get_current_price(alert.exchange, alert.currency, alert.cryptocurrency), alert.currency,
@@ -529,7 +538,7 @@ def ticker_alerts():
         app.logger.debug("Processing Alerts ...")
         for alert in Alert.objects(active=True):
             app.logger.debug("Processing Alert: {}".format(alert.id))
-            if alert_meets_criteria(alert):
+            if alert_meets_price_criteria(alert):
                 alert_trigger(alert)
 
 #############################################################################
