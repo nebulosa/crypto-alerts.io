@@ -11,6 +11,8 @@
       cp /tmp/.env /tmp/app.env
     fi
 
+    rm -rf /tmp/.env*
+
     grep "APP_DOMAIN=" /tmp/app.env > /tmp/app_name
     . /tmp/app_name
     echo "${APP_DOMAIN}"
